@@ -1,0 +1,362 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.stApp {
+  background-color: #07070f;
+  background-image:
+    radial-gradient(ellipse at 80% 0%, rgba(124, 58, 237, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 100%, rgba(124, 58, 237, 0.06) 0%, transparent 50%);
+}
+
+[data-testid="stSidebar"] {
+  background-color: #0d0d18 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-testid="stSidebar"] * {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+[data-testid="stSidebarContent"] {
+  padding: 2rem 1.2rem;
+}
+
+section[data-testid="stSidebar"] .stSelectbox label {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+div[data-baseweb="select"]>div {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  color: white !important;
+}
+
+.stPlotlyChart {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+footer {
+  display: none;
+}
+
+#MainMenu {
+  display: none;
+}
+
+header {
+  display: none;
+}
+
+/* ── KPI CARDS ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 22px 22px 18px;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), transparent);
+}
+
+.kpi-card:hover {
+  border-color: rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.1);
+}
+
+.kpi-card.danger {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.kpi-card.danger::before {
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.4), transparent);
+}
+
+.kpi-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.38);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-value {
+  font-size: 30px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.kpi-value.danger {
+  color: #f87171;
+}
+
+.kpi-value.medium {
+  font-size: 20px;
+  padding-top: 5px;
+}
+
+.kpi-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.kpi-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.kpi-trend.up {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.kpi-trend.neutral {
+  background: rgba(124, 58, 237, 0.15);
+  color: #a78bfa;
+}
+
+.kpi-trend.down {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.kpi-bar {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  margin-top: 14px;
+}
+
+.kpi-bar-fill {
+  height: 2px;
+  background: linear-gradient(90deg, #4c1d95, #7c3aed);
+  border-radius: 2px;
+}
+
+/* ── PULSE ANIMATION ── */
+.pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ── CHART LABELS ── */
+.chart-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.chart-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 16px;
+}
+
+/* ── SECTION DIVIDER ── */
+.section-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin: 24px 0;
+}
+
+/* ── ANOMALY CARDS ── */
+.anomaly-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.anomaly-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+  border-left-width: 3px;
+}
+
+.anomaly-card.red {
+  border-left-color: #ef4444;
+}
+
+.anomaly-card.orange {
+  border-left-color: #f97316;
+}
+
+.anomaly-card.amber {
+  border-left-color: #f59e0b;
+}
+
+.anomaly-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.badge-orange {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+}
+
+.badge-amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.anomaly-merchant {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.anomaly-cat {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.38);
+  margin-bottom: 10px;
+}
+
+.anomaly-amount {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.anomaly-amount.red {
+  color: #f87171;
+}
+
+.anomaly-amount.orange {
+  color: #fb923c;
+}
+
+.anomaly-amount.amber {
+  color: #fbbf24;
+}
+
+.anomaly-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.28);
+  line-height: 1.5;
+}
+
+/* ── HEADER ── */
+.main-header {
+  padding: 28px 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 28px;
+}
+
+.main-header h1 {
+  font-size: 26px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  margin-bottom: 4px;
+}
+
+.main-header p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* ── SIDEBAR LOGO ── */
+.sidebar-logo {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.logo-icon {
+  width: 30px;
+  height: 30px;
+  background: #7c3aed;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.sidebar-tagline {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 28px;
+}
+
+/* ── SECTION HEADERS ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+}

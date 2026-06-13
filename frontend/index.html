@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinanceIQ — Personal Finance Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+
+  <!-- ── AUTH PAGE ── -->
+  <div id="auth-page" style="display:block;">
+    <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div style="width:100%; max-width:420px;">
+        <div style="text-align:center; margin-bottom:40px;">
+          <div
+            style="width:52px; height:52px; background:#7c3aed; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px;">
+            💜</div>
+          <h1 style="font-size:24px; font-weight:600; color:#fff; margin-bottom:6px;">FinanceIQ</h1>
+          <p style="font-size:13px; color:rgba(255,255,255,0.4);">Your AI-powered financial coach</p>
+        </div>
+        <div
+          style="display:flex; background:rgba(255,255,255,0.04); border-radius:12px; padding:4px; margin-bottom:24px;">
+          <button id="login-tab" onclick="switchAuthTab('login')"
+            style="flex:1; padding:10px; border:none; border-radius:9px; background:#7c3aed; color:#fff; font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Sign
+            In</button>
+          <button id="register-tab" onclick="switchAuthTab('register')"
+            style="flex:1; padding:10px; border:none; border-radius:9px; background:transparent; color:rgba(255,255,255,0.5); font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Create
+            Account</button>
+        </div>
+        <div id="login-form">
+          <div
+            style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:28px;">
+            <div style="margin-bottom:16px;">
+              <label
+                style="display:block; font-size:11px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Email</label>
+              <input id="login-email" type="email" placeholder="you@example.com"
+                style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; box-sizing:border-box; font-family:Inter,sans-serif;">
+            </div>
+            <div style="margin-bottom:24px;">
+              <label
+                style="display:block; font-size:11px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Password</label>
+              <input id="login-password" type="password" placeholder="••••••••"
+                style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; box-sizing:border-box; font-family:Inter,sans-serif;">
+            </div>
+            <button onclick="handleLogin()"
+              style="width:100%; padding:12px; background:#7c3aed; border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Sign
+              In →</button>
+            <p id="login-error"
+              style="color:#f87171; font-size:12px; margin-top:12px; text-align:center; display:none;"></p>
+          </div>
+        </div>
+        <div id="register-form" style="display:none;">
+          <div
+            style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:28px;">
+            <div style="margin-bottom:16px;">
+              <label
+                style="display:block; font-size:11px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Username</label>
+              <input id="reg-username" type="text" placeholder="soroush"
+                style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; box-sizing:border-box; font-family:Inter,sans-serif;">
+            </div>
+            <div style="margin-bottom:16px;">
+              <label
+                style="display:block; font-size:11px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Email</label>
+              <input id="reg-email" type="email" placeholder="you@example.com"
+                style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; box-sizing:border-box; font-family:Inter,sans-serif;">
+            </div>
+            <div style="margin-bottom:24px;">
+              <label
+                style="display:block; font-size:11px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;">Password</label>
+              <input id="reg-password" type="password" placeholder="••••••••"
+                style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; box-sizing:border-box; font-family:Inter,sans-serif;">
+            </div>
+            <button onclick="handleRegister()"
+              style="width:100%; padding:12px; background:#7c3aed; border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Create
+              Account →</button>
+            <p id="register-error"
+              style="color:#f87171; font-size:12px; margin-top:12px; text-align:center; display:none;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── UPLOAD PAGE ── -->
+  <div id="upload-page" style="display:none;">
+    <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div style="width:100%; max-width:500px; text-align:center;">
+        <div style="font-size:48px; margin-bottom:20px;">📊</div>
+        <h2 style="font-size:22px; font-weight:600; color:#fff; margin-bottom:8px;">Upload Your Bank Data</h2>
+        <p style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:32px;">Upload a CSV file from your bank to
+          get started. Your data stays private and secure.</p>
+        <div id="upload-zone"
+          style="background:rgba(255,255,255,0.03); border:2px dashed rgba(124,58,237,0.4); border-radius:16px; padding:48px 32px; margin-bottom:20px; cursor:pointer;"
+          onclick="document.getElementById('csv-input').click()" ondragover="event.preventDefault();"
+          ondrop="handleFileDrop(event)">
+          <div style="font-size:32px; margin-bottom:12px;">📁</div>
+          <p style="color:rgba(255,255,255,0.6); font-size:14px; margin-bottom:4px;">Drop your CSV here or click to
+            browse</p>
+          <p style="color:rgba(255,255,255,0.25); font-size:12px;">Supports TD Bank, RBC, BMO, Chase, Bank of America
+            and more</p>
+        </div>
+        <input id="csv-input" type="file" accept=".csv" style="display:none;" onchange="handleFileUpload(event)">
+        <p id="upload-status" style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:16px;"></p>
+        <button onclick="useSampleData()"
+          style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:rgba(255,255,255,0.6); font-size:13px; cursor:pointer; font-family:Inter,sans-serif;">
+          Use Sample Data (Kaggle 2018 Dataset)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── APP PAGES ── -->
+  <div id="app-pages" style="display:none;">
+    <nav>
+      <div class="nav-logo">
+        <div class="nav-logo-icon">💜</div>
+        FinanceIQ
+      </div>
+      <div class="nav-items">
+        <div class="nav-item active" data-page="dashboard">Dashboard</div>
+        <div class="nav-item" data-page="transactions">Transactions</div>
+        <div class="nav-item" data-page="reports">Reports</div>
+        <div class="nav-item" data-page="settings">Settings</div>
+        <div class="nav-item" data-page="ai">AI Coach</div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-bell">🔔</div>
+        <div class="nav-user">
+          <div class="nav-avatar">S</div>
+          <div class="nav-user-info">
+            <div class="nav-user-name" id="nav-username">Soroush</div>
+            <div class="nav-user-role">Premium User</div>
+          </div>
+          <button onclick="handleLogout()"
+            style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.2); color:#f87171; padding:6px 14px; border-radius:8px; font-size:12px; cursor:pointer; font-family:Inter,sans-serif; margin-left:8px;">Logout</button>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+
+      <!-- ── DASHBOARD ── -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <h1>Good Morning, Soroush 👋</h1>
+          <p>2018 · Personal Finance Overview · Last updated Dec 29, 2018</p>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Total Spent</span><span
+                class="kpi-badge badge-purple">2018</span></div>
+            <div class="kpi-value" id="total-spent">—</div>
+            <div class="kpi-sub" id="transaction-count">—</div>
+            <div class="kpi-bar">
+              <div class="kpi-bar-fill" style="width:78%"></div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Monthly Average</span><span
+                class="kpi-badge badge-green">stable</span></div>
+            <div class="kpi-value" id="monthly-avg">—</div>
+            <div class="kpi-sub">$3,701 avg excl. renovation</div>
+            <div class="kpi-bar">
+              <div class="kpi-bar-fill" style="width:52%"></div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Top Category</span><span
+                class="kpi-badge badge-purple">39%</span></div>
+            <div class="kpi-value medium" id="top-category">—</div>
+            <div class="kpi-sub" id="top-category-amt">—</div>
+            <div class="kpi-bar">
+              <div class="kpi-bar-fill" style="width:39%"></div>
+            </div>
+          </div>
+          <div class="kpi-card danger">
+            <div class="kpi-header"><span class="kpi-label">Anomalies</span>
+              <div class="pulse"></div>
+            </div>
+            <div class="kpi-value danger" id="anomaly-count">—</div>
+            <div class="kpi-sub">Transactions &gt; 2× category avg</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📈 Monthly Spending Trend</div>
+              <div class="card-sub">Home renovation spike detected in May–Jun 2018</div>
+            </div>
+            <span class="kpi-badge badge-red">+82% spike May–Jun</span>
+          </div>
+          <div class="chart-container" style="height:280px;">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="two-col">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">🗂️ Spending by Category</div>
+            <div class="card-sub">Annual totals · 2018</div>
+            <div class="chart-container" style="height:380px;"><canvas id="categoryChart"></canvas></div>
+          </div>
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">💜 Actual vs Annual Budget</div>
+            <div class="card-sub">Annual spend vs budget targets</div>
+            <div class="legend">
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#7c3aed;"></div>Actual
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:#f97316;"></div>Budget
+              </div>
+            </div>
+            <div class="chart-container" style="height:340px;"><canvas id="budgetChart"></canvas></div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="card-header" style="margin-bottom:16px;">
+          <div>
+            <div class="card-title">⚠️ Top Anomalies Detected</div>
+            <div class="card-sub" style="margin-bottom:0;">Transactions exceeding 2× category average</div>
+          </div>
+          <span class="kpi-badge badge-red" id="anomaly-badge">— flagged</span>
+        </div>
+
+        <div class="anomaly-grid">
+          <div class="anomaly-card red">
+            <span class="kpi-badge badge-red">17.3× avg</span>
+            <div class="anomaly-merchant">Mike's Construction Co.</div>
+            <div class="anomaly-cat">🔧 Home Improvement · Jun 15, 2018</div>
+            <div class="anomaly-amount red">$9,200.00</div>
+            <div class="anomaly-desc">342% above typical home improvement spend</div>
+          </div>
+          <div class="anomaly-card orange">
+            <span class="kpi-badge badge-orange">5.6× avg</span>
+            <div class="anomaly-merchant">Grocery Store</div>
+            <div class="anomaly-cat">🛒 Groceries · Aug 3, 2018</div>
+            <div class="anomaly-amount orange">$523.00</div>
+            <div class="anomaly-desc">460% above typical grocery transaction</div>
+          </div>
+          <div class="anomaly-card amber">
+            <span class="kpi-badge badge-amber">4.0× avg</span>
+            <div class="anomaly-merchant">Seafood Restaurant</div>
+            <div class="anomaly-cat">🍽️ Restaurants · Mar 22, 2018</div>
+            <div class="anomaly-amount amber">$130.00</div>
+            <div class="anomaly-desc">300% above typical restaurant spend</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="chart-container" style="height:360px;"><canvas id="anomalyChart"></canvas></div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="card">
+          <div class="card-header" style="margin-bottom:16px;">
+            <div>
+              <div class="card-title">📋 Recent Transactions</div>
+              <div class="card-sub" style="margin-bottom:0;">Latest entries · 2018</div>
+            </div>
+            <span class="view-all" onclick="switchPage('transactions')">View all →</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Merchant</th>
+                  <th>Category</th>
+                  <th>Account</th>
+                  <th style="text-align:right;">Amount</th>
+                  <th style="text-align:right;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-body">
+                <tr>
+                  <td colspan="6" class="loading">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <footer>FinanceIQ · Kaggle Personal Finance Dataset · 2018 · Built with Python + Flask</footer>
+      </div>
+
+      <!-- ── TRANSACTIONS ── -->
+      <div id="page-transactions" class="page">
+        <div class="page-header">
+          <h1>Transactions</h1>
+          <p>All 617 transactions · 2018</p>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="filters-row">
+            <input type="text" id="search-input" placeholder="🔍  Search merchant..." class="filter-input"
+              oninput="filterTransactions()">
+            <select id="filter-month" class="filter-select" onchange="filterTransactions()">
+              <option>All</option>
+            </select>
+            <select id="filter-category" class="filter-select" onchange="filterTransactions()">
+              <option>All</option>
+            </select>
+            <select id="filter-account" class="filter-select" onchange="filterTransactions()">
+              <option>All</option>
+            </select>
+            <span class="filter-count" id="filter-count">617 results</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Merchant</th>
+                  <th>Category</th>
+                  <th>Account</th>
+                  <th style="text-align:right;">Amount</th>
+                  <th style="text-align:right;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="all-transactions-body">
+                <tr>
+                  <td colspan="6" class="loading">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REPORTS ── -->
+      <div id="page-reports" class="page">
+        <div class="page-header">
+          <h1>Reports</h1>
+          <p>2018 · Annual financial summary</p>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Total Spent</span></div>
+            <div class="kpi-value">$63,042</div>
+            <div class="kpi-sub">Full year 2018</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Highest Month</span></div>
+            <div class="kpi-value" style="font-size:22px;">June</div>
+            <div class="kpi-sub">$13,027 spent</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Lowest Month</span></div>
+            <div class="kpi-value" style="font-size:22px;">November</div>
+            <div class="kpi-sub">$2,118 spent</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Total Categories</span></div>
+            <div class="kpi-value">18</div>
+            <div class="kpi-sub">Spending categories</div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">📅 Monthly Breakdown</div>
+            <div class="card-sub">Total spend per month</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th style="text-align:right;">Total</th>
+                    <th style="text-align:right;">Transactions</th>
+                    <th style="text-align:right;">Avg/Transaction</th>
+                  </tr>
+                </thead>
+                <tbody id="monthly-report-body">
+                  <tr>
+                    <td colspan="4" class="loading">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">💳 Spending by Account</div>
+            <div class="card-sub">Total charged per account</div>
+            <div class="chart-container" style="height:200px; margin-bottom:24px;"><canvas id="accountChart"></canvas>
+            </div>
+            <div class="card-title" style="margin-top:8px;">🏪 Top Merchants</div>
+            <div class="card-sub">Highest spend merchants</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Merchant</th>
+                    <th style="text-align:right;">Total Spent</th>
+                  </tr>
+                </thead>
+                <tbody id="merchants-body">
+                  <tr>
+                    <td colspan="2" class="loading">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div id="page-settings" class="page">
+        <div class="page-header">
+          <h1>Settings</h1>
+          <p>App preferences and data information</p>
+        </div>
+        <div class="two-col">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">👤 Profile</div>
+            <div class="card-sub" style="margin-bottom:20px;">Your account information</div>
+            <div class="settings-row">
+              <div class="settings-label">Name</div>
+              <div class="settings-value">Soroush</div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Plan</div>
+              <div class="settings-value"><span class="kpi-badge badge-purple">Premium</span></div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Data Year</div>
+              <div class="settings-value">2018</div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Data Source</div>
+              <div class="settings-value">Kaggle Personal Finance Dataset</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">📊 Data Summary</div>
+            <div class="card-sub" style="margin-bottom:20px;">Overview of your dataset</div>
+            <div class="settings-row">
+              <div class="settings-label">Total Transactions</div>
+              <div class="settings-value">617</div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Date Range</div>
+              <div class="settings-value">Jan 01 – Dec 29, 2018</div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Accounts</div>
+              <div class="settings-value">Platinum Card, Checking, Silver Card</div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Categories</div>
+              <div class="settings-value">18 categories</div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Backend</div>
+              <div class="settings-value">Python + Flask + pandas</div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">Frontend</div>
+              <div class="settings-value">HTML + CSS + Chart.js</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">📁 Data Management</div>
+          <div class="card-sub" style="margin-bottom:20px;">Upload new bank data or replace existing transactions</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div
+              style="background:rgba(255,255,255,0.02); border:2px dashed rgba(124,58,237,0.3); border-radius:12px; padding:24px; text-align:center; cursor:pointer;"
+              onclick="document.getElementById('settings-csv-input').click()">
+              <div style="font-size:28px; margin-bottom:8px;">📤</div>
+              <div style="font-size:13px; font-weight:500; color:#fff; margin-bottom:4px;">Upload New CSV</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.35);">Replace all transactions with new data</div>
+              <input id="settings-csv-input" type="file" accept=".csv" style="display:none;"
+                onchange="handleSettingsUpload(event)">
+            </div>
+            <div
+              style="background:rgba(255,255,255,0.02); border:2px dashed rgba(124,58,237,0.3); border-radius:12px; padding:24px; text-align:center; cursor:pointer;"
+              onclick="reloadSampleData()">
+              <div style="font-size:28px; margin-bottom:8px;">🔄</div>
+              <div style="font-size:13px; font-weight:500; color:#fff; margin-bottom:4px;">Reload Sample Data</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.35);">Reset to Kaggle 2018 dataset</div>
+            </div>
+          </div>
+          <p id="settings-upload-status"
+            style="font-size:13px; color:rgba(255,255,255,0.4); margin-top:16px; text-align:center;"></p>
+        </div>
+      </div>
+
+      <!-- ── AI COACH ── -->
+      <div id="page-ai" class="page">
+        <div class="page-header">
+          <h1>🤖 AI Financial Coach</h1>
+          <p>Powered by Claude · Knows your complete financial history</p>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 360px; gap:16px; align-items:start;">
+          <div class="card" style="height:600px; display:flex; flex-direction:column;">
+            <div id="chat-messages"
+              style="flex:1; overflow-y:auto; padding:8px 0; display:flex; flex-direction:column; gap:12px;">
+              <div class="ai-message">
+                <div class="ai-bubble">👋 Hi Soroush! I'm your FinanceIQ AI coach. I have full context of your financial
+                  data — your spending patterns, anomalies, goals, and health score. Ask me anything about your
+                  finances!</div>
+              </div>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:16px; display:flex; gap:10px;">
+              <input id="chat-input" type="text" placeholder="Ask me about your spending, goals, or how to save more..."
+                style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; font-family:Inter,sans-serif;"
+                onkeypress="if(event.key==='Enter') sendMessage()">
+              <button onclick="sendMessage()"
+                style="background:#7c3aed; border:none; border-radius:10px; padding:11px 20px; color:#fff; font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif; white-space:nowrap;">Send
+                →</button>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div class="card" style="margin-bottom:0;">
+              <div class="card-title" style="margin-bottom:16px;">💡 Ask me about...</div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <button onclick="askSuggestion(this)" class="suggestion-btn">Why did I overspend in May and
+                  June?</button>
+                <button onclick="askSuggestion(this)" class="suggestion-btn">What are my top 3 areas to cut
+                  spending?</button>
+                <button onclick="askSuggestion(this)" class="suggestion-btn">How can I improve my financial health
+                  score?</button>
+                <button onclick="askSuggestion(this)" class="suggestion-btn">Give me a 90-day savings plan</button>
+                <button onclick="askSuggestion(this)" class="suggestion-btn">What spending habits should I
+                  change?</button>
+                <button onclick="askSuggestion(this)" class="suggestion-btn">How much should I save each month?</button>
+                <button onclick="askSuggestion(this)" class="suggestion-btn">Analyze my anomalies and explain
+                  them</button>
+                <button onclick="askSuggestion(this)" class="suggestion-btn">Am I on track financially?</button>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:0;">
+              <div class="card-title" style="margin-bottom:12px;">📊 Your Quick Stats</div>
+              <div class="settings-row">
+                <div class="settings-label">Total Spent</div>
+                <div class="settings-value" id="ai-total">Loading...</div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label">Health Score</div>
+                <div class="settings-value" id="ai-health">Loading...</div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label">Anomalies</div>
+                <div class="settings-value" id="ai-anomalies">Loading...</div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-label">Top Category</div>
+                <div class="settings-value" id="ai-top-cat">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+</body>
+
+</html>

@@ -1,0 +1,446 @@
+// ── STARTUP ───────────────────────────────────────────
+const API = 'http://localhost:5000';
+let currentUser = null;
+
+function switchAuthTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('login-form').style.display    = isLogin ? 'block' : 'none';
+    document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
+    document.getElementById('login-tab').style.background    = isLogin ? '#7c3aed' : 'transparent';
+    document.getElementById('register-tab').style.background = isLogin ? 'transparent' : '#7c3aed';
+    document.getElementById('login-tab').style.color    = isLogin ? '#fff' : 'rgba(255,255,255,0.5)';
+    document.getElementById('register-tab').style.color = isLogin ? 'rgba(255,255,255,0.5)' : '#fff';
+}
+
+async function handleLogin() {
+    const email    = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorEl  = document.getElementById('login-error');
+    try {
+        const res  = await fetch(`${API}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.textContent = data.error;
+            errorEl.style.display = 'block';
+            return;
+        }
+        currentUser = data.user;
+        checkAndShowDashboard();
+    } catch(e) {
+        errorEl.textContent = 'Connection error. Is the server running?';
+        errorEl.style.display = 'block';
+    }
+}
+
+async function handleRegister() {
+    const username = document.getElementById('reg-username').value;
+    const email    = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const errorEl  = document.getElementById('register-error');
+    try {
+        const res  = await fetch(`${API}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.textContent = data.error;
+            errorEl.style.display = 'block';
+            return;
+        }
+        currentUser = data.user;
+        checkAndShowDashboard();
+    } catch(e) {
+        errorEl.textContent = 'Connection error. Is the server running?';
+        errorEl.style.display = 'block';
+    }
+}
+
+async function checkAndShowDashboard() {
+    const res = await fetch(`${API}/api/summary`, { credentials: 'include' });
+    if (res.status === 404) { showPage('upload'); return; }
+    if (res.ok) { showPage('dashboard'); initDashboard(); return; }
+    showPage('auth');
+}
+
+function showPage(name) {
+    document.getElementById('auth-page').style.display   = name === 'auth'   ? 'block' : 'none';
+    document.getElementById('upload-page').style.display = name === 'upload' ? 'block' : 'none';
+    document.getElementById('app-pages').style.display   = name === 'dashboard' ? 'block' : 'none';
+}
+
+async function handleFileUpload(event) {
+    const file     = event.target.files[0];
+    const statusEl = document.getElementById('upload-status');
+    if (!file) return;
+    statusEl.textContent = 'Uploading and analyzing...';
+    const formData = new FormData();
+    formData.append('file', file);
+    const res  = await fetch(`${API}/api/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+    });
+    const data = await res.json();
+    if (res.ok) {
+        statusEl.textContent = data.message;
+        setTimeout(() => { showPage('dashboard'); initDashboard(); }, 1000);
+    } else {
+        statusEl.style.color = '#f87171';
+        statusEl.textContent = 'Error: ' + data.error;
+    }
+}
+
+function handleFileDrop(event) {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    handleFileUpload({ target: { files: [file] } });
+}
+
+async function useSampleData() {
+    const statusEl = document.getElementById('upload-status');
+    statusEl.textContent = 'Loading sample data...';
+    const res  = await fetch(`${API}/api/load-sample`, {
+        method: 'POST',
+        credentials: 'include'
+    });
+    const data = await res.json();
+    if (res.ok) {
+        statusEl.textContent = data.message;
+        setTimeout(() => { showPage('dashboard'); initDashboard(); }, 1000);
+    } else {
+        statusEl.style.color = '#f87171';
+        statusEl.textContent = 'Error: ' + data.error;
+    }
+}
+
+async function initDashboard() {
+    await Promise.all([
+        loadSummary(),
+        loadTrendChart(),
+        loadCategoryChart(),
+        loadBudgetChart(),
+        loadAnomalyChart(),
+        loadTransactions(),
+        loadFilters()
+    ]);
+}
+
+async function startup() {
+    const res = await fetch(`${API}/api/auth/me`, { credentials: 'include' });
+    if (res.ok) {
+        currentUser = await res.json();
+        checkAndShowDashboard();
+    } else {
+        showPage('auth');
+    }
+}
+
+Chart.defaults.color = 'rgba(255,255,255,0.5)';
+Chart.defaults.font = { family: 'Inter', size: 11 };
+
+const fmt  = n => '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
+const fmt2 = n => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const gridColor   = 'rgba(255,255,255,0.04)';
+const tooltipStyle = {
+    backgroundColor: '#1a1a2e',
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    titleColor: '#fff',
+    bodyColor: 'rgba(255,255,255,0.6)',
+    padding: 10
+};
+
+const anomalyMerchants = ["Mike's Construction Co.", "Grocery Store", "Seafood Restaurant"];
+
+// ── NAVIGATION ────────────────────────────────────────
+function switchPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    const page = document.getElementById('page-' + name);
+    const nav  = document.querySelector(`[data-page="${name}"]`);
+
+    if (page) page.classList.add('active');
+    if (nav)  nav.classList.add('active');
+
+    if (name === 'transactions') loadAllTransactions();
+    if (name === 'reports')      loadReports();
+}
+
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => switchPage(item.dataset.page));
+});
+
+// ── SUMMARY ───────────────────────────────────────────
+async function loadSummary() {
+    const data = await fetch(`${API}/api/summary`).then(r => r.json());
+    document.getElementById('total-spent').textContent      = fmt(data.total_spent);
+    document.getElementById('monthly-avg').textContent      = fmt(data.monthly_avg);
+    document.getElementById('top-category').textContent     = data.top_category;
+    document.getElementById('top-category-amt').textContent = fmt(data.top_category_amt) + ' annual spend';
+    document.getElementById('transaction-count').textContent= data.transaction_count + ' transactions';
+    document.getElementById('anomaly-count').textContent    = data.anomaly_count;
+    document.getElementById('anomaly-badge').textContent    = data.anomaly_count + ' flagged';
+}
+
+// ── TREND CHART ───────────────────────────────────────
+async function loadTrendChart() {
+    const data = await fetch(`${API}/api/monthly`).then(r => r.json());
+    const labels = data.map(d => d.Month_Name);
+    const values = data.map(d => d.Amount);
+    const avg    = values.reduce((a,b) => a+b, 0) / values.length;
+
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Monthly Spend',
+                    data: values,
+                    borderColor: '#7c3aed',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: labels.map(m => ['May','June'].includes(m) ? '#ef4444' : '#7c3aed'),
+                    pointRadius: labels.map(m => ['May','June'].includes(m) ? 8 : 4),
+                    pointHoverRadius: 8,
+                    fill: true,
+                    backgroundColor: ctx => {
+                        const g = ctx.chart.ctx.createLinearGradient(0,0,0,280);
+                        g.addColorStop(0, 'rgba(124,58,237,0.2)');
+                        g.addColorStop(1, 'rgba(124,58,237,0)');
+                        return g;
+                    },
+                    tension: 0.35
+                },
+                {
+                    label: `Avg ${fmt(avg)}`,
+                    data: Array(12).fill(avg),
+                    borderColor: 'rgba(249,115,22,0.6)',
+                    borderWidth: 1.5,
+                    borderDash: [6,4],
+                    pointRadius: 0,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
+            scales: {
+                x: { grid: { color: gridColor } },
+                y: { grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+            }
+        }
+    });
+}
+
+// ── CATEGORY CHART ────────────────────────────────────
+async function loadCategoryChart() {
+    const data   = await fetch(`${API}/api/categories`).then(r => r.json());
+    const sorted = [...data].sort((a,b) => a.Amount - b.Amount);
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: sorted.map(d => d.Category),
+            datasets: [{
+                data: sorted.map(d => d.Amount),
+                backgroundColor: sorted.map((_,i) => `rgba(124,58,237,${0.3 + (i/sorted.length)*0.7})`),
+                borderRadius: 4, borderSkipped: false
+            }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
+            scales: {
+                x: { grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+// ── BUDGET CHART ──────────────────────────────────────
+async function loadBudgetChart() {
+    const data = await fetch(`${API}/api/budget`).then(r => r.json());
+
+    new Chart(document.getElementById('budgetChart'), {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.Category),
+            datasets: [
+                { label: 'Actual', data: data.map(d => d.Actual),        backgroundColor: 'rgba(124,58,237,0.8)', borderRadius: 4, borderSkipped: false },
+                { label: 'Budget', data: data.map(d => d.Annual_Budget),  backgroundColor: 'rgba(249,115,22,0.7)',  borderRadius: 4, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 30 } },
+                y: { grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+            }
+        }
+    });
+}
+
+// ── ANOMALY CHART ─────────────────────────────────────
+async function loadAnomalyChart() {
+    const data = await fetch(`${API}/api/anomalies`).then(r => r.json());
+
+    new Chart(document.getElementById('anomalyChart'), {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.Description + ' (' + d.Category + ')'),
+            datasets: [{
+                data: data.map(d => d.Times_Over),
+                backgroundColor: data.map(d => d.Times_Over >= 10 ? 'rgba(239,68,68,0.8)' : d.Times_Over >= 5 ? 'rgba(249,115,22,0.8)' : 'rgba(245,158,11,0.8)'),
+                borderRadius: 4, borderSkipped: false
+            }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' ' + ctx.raw + '× category average' } } },
+            scales: {
+                x: { grid: { color: gridColor }, ticks: { callback: v => v + 'x' } },
+                y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+            }
+        }
+    });
+}
+
+// ── RECENT TRANSACTIONS ───────────────────────────────
+async function loadTransactions() {
+    const data  = await fetch(`${API}/api/transactions`).then(r => r.json());
+    const tbody = document.getElementById('transactions-body');
+    tbody.innerHTML = renderRows(data);
+}
+
+function renderRows(data) {
+    return data.map(t => {
+        const flagged = t.is_anomaly && t.amount > 500;
+        const account = t.account || t['Account Name'] || 'Unknown';
+        const desc    = t.description || t.Description || 'Unknown';
+        const cat     = t.category || t.Category || 'Unknown';
+        const date    = t.date || t.Date || 'Unknown';
+        const amount  = t.amount || t.Amount || 0;
+
+        return `<tr class="${flagged ? 'flagged' : ''}">
+            <td>${date}</td>
+            <td>${desc}</td>
+            <td>${cat}</td>
+            <td>${account}</td>
+            <td style="text-align:right;" class="amount-cell ${flagged ? 'flagged' : ''}">${fmt2(amount)}</td>
+            <td style="text-align:right;">
+                <span class="status-badge ${flagged ? 'status-flagged' : 'status-cleared'}">
+                    ${flagged ? 'Flagged' : 'Cleared'}
+                </span>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+
+// ── ALL TRANSACTIONS + FILTERS ────────────────────────
+let filtersData = null;
+
+async function loadFilters() {
+    filtersData = await fetch(`${API}/api/filters`).then(r => r.json());
+
+    const populate = (id, items) => {
+        const el = document.getElementById(id);
+        el.innerHTML = items.map(i => `<option>${i}</option>`).join('');
+    };
+
+    populate('filter-month',    filtersData.months);
+    populate('filter-category', filtersData.categories);
+    populate('filter-account',  filtersData.accounts);
+}
+
+async function loadAllTransactions() {
+    const month    = document.getElementById('filter-month').value;
+    const category = document.getElementById('filter-category').value;
+    const account  = document.getElementById('filter-account').value;
+    const search   = document.getElementById('search-input').value;
+
+    const params = new URLSearchParams({ month, category, account, search });
+    const data   = await fetch(`${API}/api/transactions/all?${params}`).then(r => r.json());
+
+    document.getElementById('filter-count').textContent = data.length + ' results';
+    document.getElementById('all-transactions-body').innerHTML = renderRows(data);
+}
+
+function filterTransactions() { loadAllTransactions(); }
+
+// ── REPORTS ───────────────────────────────────────────
+let reportsLoaded = false;
+
+async function loadReports() {
+    if (reportsLoaded) return;
+    reportsLoaded = true;
+
+    const data = await fetch(`${API}/api/reports`).then(r => r.json());
+
+    // Monthly table
+    const monthlyBody = document.getElementById('monthly-report-body');
+    monthlyBody.innerHTML = data.monthly.map(m => `
+        <tr>
+            <td>${m.Month_Name}</td>
+            <td style="text-align:right;">${fmt(m.total)}</td>
+            <td style="text-align:right;">${m.count}</td>
+            <td style="text-align:right;">${fmt(m.avg)}</td>
+        </tr>
+    `).join('');
+
+    // Account chart
+    new Chart(document.getElementById('accountChart'), {
+        type: 'doughnut',
+        data: {
+            labels: data.by_account.map(a => a.account),
+            datasets: [{
+                data: data.by_account.map(a => a.total),
+                backgroundColor: ['rgba(124,58,237,0.8)', 'rgba(249,115,22,0.8)', 'rgba(34,197,94,0.8)'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { padding: 16, font: { size: 12 } } },
+                tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' ' + fmt(ctx.raw) } }
+            }
+        }
+    });
+
+    // Top merchants table
+    document.getElementById('merchants-body').innerHTML = data.top_merchants.map(m => `
+        <tr>
+            <td>${m.Description}</td>
+            <td style="text-align:right;">${fmt(m.Amount)}</td>
+        </tr>
+    `).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────
+async function init() {
+    await Promise.all([
+        loadSummary(),
+        loadTrendChart(),
+        loadCategoryChart(),
+        loadBudgetChart(),
+        loadAnomalyChart(),
+        loadTransactions(),
+        loadFilters()
+    ]);
+}
+
+startup();
