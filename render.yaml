@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: financeiq
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: CLAUDE_API_KEY
+        sync: false
+      - key: FLASK_SECRET_KEY
+        sync: false
