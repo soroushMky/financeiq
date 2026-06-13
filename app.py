@@ -20,11 +20,18 @@ app = Flask(__name__, static_folder='frontend', static_url_path='')
 app.config['SECRET_KEY']          = os.getenv('FLASK_SECRET_KEY', 'financeiq_secret')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///financeiq.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_COOKIE_SECURE']   = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 # ── EXTENSIONS ────────────────────────────────────────
 db.init_app(app)
 bcrypt.init_app(app)
-CORS(app, supports_credentials=True)
+CORS(app, 
+     supports_credentials=True,
+     origins=['https://financeiq-92ut.onrender.com'],
+     allow_headers=['Content-Type'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 login_manager = LoginManager()
 login_manager.init_app(app)
