@@ -4,10 +4,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinanceIQ — Personal Finance Analyzer</title>
+  <title>Nomi — Personal Finance Analyzer</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js" defer></script>
+  <style>
+    .nomi-logo-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .nav-logo-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .sql-toggle-btn {
+      background: rgba(59, 107, 245, 0.08);
+      border: 1px solid rgba(59, 107, 245, 0.2);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 11px;
+      color: #3B6BF5;
+      cursor: pointer;
+      margin-bottom: 8px;
+      font-family: Inter, sans-serif;
+    }
+
+    .sql-toggle-btn:hover {
+      background: rgba(59, 107, 245, 0.15);
+    }
+
+    .sql-pre {
+      background: rgba(59, 107, 245, 0.08);
+      border: 1px solid rgba(59, 107, 245, 0.2);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 10px;
+      color: #3B6BF5;
+      overflow-x: auto;
+      margin-bottom: 12px;
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
@@ -17,16 +60,20 @@
     <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
       <div style="width:100%; max-width:420px;">
         <div style="text-align:center; margin-bottom:40px;">
-          <div
-            style="width:52px; height:52px; background:#7c3aed; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px;">
-            💜</div>
-          <h1 style="font-size:24px; font-weight:600; color:#fff; margin-bottom:6px;">FinanceIQ</h1>
+          <div style="display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+            <img src="/nomi-logo.png" alt="Nomi" class="nomi-logo-img"
+              onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='flex'">
+            <div id="fallback-icon"
+              style="width:52px; height:52px; background:linear-gradient(135deg,#3B6BF5,#6B3BF5); border-radius:14px; display:none; align-items:center; justify-content:center; font-size:24px;">
+              📊</div>
+          </div>
+          <h1 style="font-size:24px; font-weight:600; color:#fff; margin-bottom:6px;">Nomi</h1>
           <p style="font-size:13px; color:rgba(255,255,255,0.4);">Your AI-powered financial coach</p>
         </div>
         <div
           style="display:flex; background:rgba(255,255,255,0.04); border-radius:12px; padding:4px; margin-bottom:24px;">
           <button id="login-tab" onclick="switchAuthTab('login')"
-            style="flex:1; padding:10px; border:none; border-radius:9px; background:#7c3aed; color:#fff; font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Sign
+            style="flex:1; padding:10px; border:none; border-radius:9px; background:#3B6BF5; color:#fff; font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Sign
             In</button>
           <button id="register-tab" onclick="switchAuthTab('register')"
             style="flex:1; padding:10px; border:none; border-radius:9px; background:transparent; color:rgba(255,255,255,0.5); font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Create
@@ -48,7 +95,7 @@
                 style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; box-sizing:border-box; font-family:Inter,sans-serif;">
             </div>
             <button onclick="handleLogin()"
-              style="width:100%; padding:12px; background:#7c3aed; border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Sign
+              style="width:100%; padding:12px; background:#3B6BF5; border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Sign
               In →</button>
             <p id="login-error"
               style="color:#f87171; font-size:12px; margin-top:12px; text-align:center; display:none;"></p>
@@ -76,12 +123,15 @@
                 style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; box-sizing:border-box; font-family:Inter,sans-serif;">
             </div>
             <button onclick="handleRegister()"
-              style="width:100%; padding:12px; background:#7c3aed; border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Create
+              style="width:100%; padding:12px; background:#3B6BF5; border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">Create
               Account →</button>
             <p id="register-error"
               style="color:#f87171; font-size:12px; margin-top:12px; text-align:center; display:none;"></p>
           </div>
         </div>
+        <p style="text-align:center; font-size:11px; color:rgba(255,255,255,0.2); margin-top:24px;">
+          Nomi · Personal Finance Analyzer · Powered by AI
+        </p>
       </div>
     </div>
   </div>
@@ -95,7 +145,7 @@
         <p style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:32px;">Upload a CSV file from your bank to
           get started. Your data stays private and secure.</p>
         <div id="upload-zone"
-          style="background:rgba(255,255,255,0.03); border:2px dashed rgba(124,58,237,0.4); border-radius:16px; padding:48px 32px; margin-bottom:20px; cursor:pointer;"
+          style="background:rgba(255,255,255,0.03); border:2px dashed rgba(59,107,245,0.4); border-radius:16px; padding:48px 32px; margin-bottom:20px; cursor:pointer;"
           onclick="document.getElementById('csv-input').click()" ondragover="event.preventDefault();"
           ondrop="handleFileDrop(event)">
           <div style="font-size:32px; margin-bottom:12px;">📁</div>
@@ -118,8 +168,12 @@
   <div id="app-pages" style="display:none;">
     <nav>
       <div class="nav-logo">
-        <div class="nav-logo-icon">💜</div>
-        FinanceIQ
+        <img src="/nomi-logo.png" alt="Nomi" class="nav-logo-img"
+          onerror="this.style.display='none'; document.getElementById('nav-fallback').style.display='flex'">
+        <div id="nav-fallback"
+          style="width:38px; height:38px; background:linear-gradient(135deg,#3B6BF5,#6B3BF5); border-radius:8px; display:none; align-items:center; justify-content:center; font-size:14px;">
+          N</div>
+        Nomi
       </div>
       <div class="nav-items">
         <div class="nav-item active" data-page="dashboard">Dashboard</div>
@@ -196,9 +250,7 @@
             </div>
             <span class="kpi-badge badge-red">+82% spike May–Jun</span>
           </div>
-          <div class="chart-container" style="height:280px;">
-            <canvas id="trendChart"></canvas>
-          </div>
+          <div class="chart-container" style="height:280px;"><canvas id="trendChart"></canvas></div>
         </div>
 
         <hr class="divider">
@@ -210,11 +262,11 @@
             <div class="chart-container" style="height:380px;"><canvas id="categoryChart"></canvas></div>
           </div>
           <div class="card" style="margin-bottom:0;">
-            <div class="card-title">💜 Actual vs Annual Budget</div>
+            <div class="card-title">💙 Actual vs Annual Budget</div>
             <div class="card-sub">Annual spend vs budget targets</div>
             <div class="legend">
               <div class="legend-item">
-                <div class="legend-dot" style="background:#7c3aed;"></div>Actual
+                <div class="legend-dot" style="background:#3B6BF5;"></div>Actual
               </div>
               <div class="legend-item">
                 <div class="legend-dot" style="background:#f97316;"></div>Budget
@@ -293,7 +345,134 @@
           </div>
         </div>
 
-        <footer>FinanceIQ · Kaggle Personal Finance Dataset · 2018 · Built with Python + Flask</footer>
+        <hr class="divider">
+
+        <!-- ── SQL INSIGHTS ── -->
+        <div class="card-header" style="margin-bottom:16px;">
+          <div>
+            <div class="card-title">🗄️ SQL Insights</div>
+            <div class="card-sub">Live queries running against your SQLite database</div>
+          </div>
+          <span class="kpi-badge badge-purple">SQL</span>
+        </div>
+
+        <div class="two-col" style="margin-bottom:16px;">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title" style="margin-bottom:8px;">Top Merchants by Spend</div>
+            <button class="sql-toggle-btn" onclick="toggleSQL(this)">Show SQL ▼</button>
+            <pre class="sql-pre">SELECT description,
+  ROUND(SUM(amount), 2) as total_spent,
+  COUNT(*) as transaction_count
+FROM transactions
+WHERE user_id = ? AND transaction_type = 'debit'
+GROUP BY description
+ORDER BY total_spent DESC LIMIT 5</pre>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Merchant</th>
+                    <th style="text-align:right;">Total</th>
+                    <th style="text-align:right;">Txns</th>
+                  </tr>
+                </thead>
+                <tbody id="sql-merchants-body">
+                  <tr>
+                    <td colspan="3" class="loading">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title" style="margin-bottom:8px;">Spending by Account</div>
+            <button class="sql-toggle-btn" onclick="toggleSQL(this)">Show SQL ▼</button>
+            <pre class="sql-pre">SELECT account_name,
+  ROUND(SUM(amount), 2) as total,
+  COUNT(*) as txn_count,
+  ROUND(AVG(amount), 2) as avg_amount
+FROM transactions
+WHERE user_id = ? AND transaction_type = 'debit'
+GROUP BY account_name
+ORDER BY total DESC</pre>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Account</th>
+                    <th style="text-align:right;">Total</th>
+                    <th style="text-align:right;">Avg</th>
+                  </tr>
+                </thead>
+                <tbody id="sql-accounts-body">
+                  <tr>
+                    <td colspan="3" class="loading">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col" style="margin-bottom:16px;">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title" style="margin-bottom:8px;">Biggest Single Transactions</div>
+            <button class="sql-toggle-btn" onclick="toggleSQL(this)">Show SQL ▼</button>
+            <pre class="sql-pre">SELECT date, description, category,
+  ROUND(amount, 2) as amount
+FROM transactions
+WHERE user_id = ? AND transaction_type = 'debit'
+ORDER BY amount DESC LIMIT 5</pre>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Merchant</th>
+                    <th>Category</th>
+                    <th style="text-align:right;">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="sql-biggest-body">
+                  <tr>
+                    <td colspan="3" class="loading">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title" style="margin-bottom:8px;">Category Breakdown</div>
+            <button class="sql-toggle-btn" onclick="toggleSQL(this)">Show SQL ▼</button>
+            <pre class="sql-pre">SELECT category,
+  ROUND(SUM(amount), 2) as total,
+  ROUND(SUM(amount) * 100.0 /
+    (SELECT SUM(amount) FROM transactions
+     WHERE user_id = ?), 1) as percentage
+FROM transactions
+WHERE user_id = ? AND transaction_type = 'debit'
+GROUP BY category ORDER BY total DESC</pre>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th style="text-align:right;">Total</th>
+                    <th style="text-align:right;">%</th>
+                  </tr>
+                </thead>
+                <tbody id="sql-categories-body">
+                  <tr>
+                    <td colspan="3" class="loading">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <footer>Nomi · Kaggle Personal Finance Dataset · 2018 · Built with Python + Flask + AI</footer>
       </div>
 
       <!-- ── TRANSACTIONS ── -->
@@ -478,7 +657,7 @@
           <div class="card-sub" style="margin-bottom:20px;">Upload new bank data or replace existing transactions</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <div
-              style="background:rgba(255,255,255,0.02); border:2px dashed rgba(124,58,237,0.3); border-radius:12px; padding:24px; text-align:center; cursor:pointer;"
+              style="background:rgba(255,255,255,0.02); border:2px dashed rgba(59,107,245,0.3); border-radius:12px; padding:24px; text-align:center; cursor:pointer;"
               onclick="document.getElementById('settings-csv-input').click()">
               <div style="font-size:28px; margin-bottom:8px;">📤</div>
               <div style="font-size:13px; font-weight:500; color:#fff; margin-bottom:4px;">Upload New CSV</div>
@@ -487,7 +666,7 @@
                 onchange="handleSettingsUpload(event)">
             </div>
             <div
-              style="background:rgba(255,255,255,0.02); border:2px dashed rgba(124,58,237,0.3); border-radius:12px; padding:24px; text-align:center; cursor:pointer;"
+              style="background:rgba(255,255,255,0.02); border:2px dashed rgba(59,107,245,0.3); border-radius:12px; padding:24px; text-align:center; cursor:pointer;"
               onclick="reloadSampleData()">
               <div style="font-size:28px; margin-bottom:8px;">🔄</div>
               <div style="font-size:13px; font-weight:500; color:#fff; margin-bottom:4px;">Reload Sample Data</div>
@@ -510,9 +689,8 @@
             <div id="chat-messages"
               style="flex:1; overflow-y:auto; padding:8px 0; display:flex; flex-direction:column; gap:12px;">
               <div class="ai-message">
-                <div class="ai-bubble">👋 Hi Soroush! I'm your FinanceIQ AI coach. I have full context of your financial
-                  data — your spending patterns, anomalies, goals, and health score. Ask me anything about your
-                  finances!</div>
+                <div class="ai-bubble">👋 Hi! I'm your Nomi AI coach. I have full context of your financial data — your
+                  spending patterns, anomalies, goals, and health score. Ask me anything about your finances!</div>
               </div>
             </div>
             <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:16px; display:flex; gap:10px;">
@@ -520,7 +698,7 @@
                 style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; color:#fff; font-size:13px; outline:none; font-family:Inter,sans-serif;"
                 onkeypress="if(event.key==='Enter') sendMessage()">
               <button onclick="sendMessage()"
-                style="background:#7c3aed; border:none; border-radius:10px; padding:11px 20px; color:#fff; font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif; white-space:nowrap;">Send
+                style="background:#3B6BF5; border:none; border-radius:10px; padding:11px 20px; color:#fff; font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif; white-space:nowrap;">Send
                 →</button>
             </div>
           </div>
@@ -568,6 +746,18 @@
 
     </main>
   </div>
+
+  <div id="particles-bg"></div>
+  <script>
+    const bg = document.getElementById('particles-bg');
+    for (let i = 0; i < 140; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 6 + 2;
+      p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random() * 100}%;animation-duration:${Math.random() * 15 + 10}s;animation-delay:${Math.random() * 10}s;`;
+      bg.appendChild(p);
+    }
+  </script>
 
 </body>
 

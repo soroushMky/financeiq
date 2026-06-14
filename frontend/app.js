@@ -1,7 +1,7 @@
-const API = '';;
+// ── STARTUP ───────────────────────────────────────────
+const API = '';
 let currentUser = null;
 let reportsLoaded = false;
-let chatHistory = [];
 
 Chart.defaults.color = 'rgba(255,255,255,0.5)';
 Chart.defaults.font  = { family: 'Inter', size: 11 };
@@ -29,8 +29,8 @@ function switchAuthTab(tab) {
     const isLogin = tab === 'login';
     document.getElementById('login-form').style.display    = isLogin ? 'block' : 'none';
     document.getElementById('register-form').style.display = isLogin ? 'none'  : 'block';
-    document.getElementById('login-tab').style.background    = isLogin ? '#7c3aed' : 'transparent';
-    document.getElementById('register-tab').style.background = isLogin ? 'transparent' : '#7c3aed';
+    document.getElementById('login-tab').style.background    = isLogin ? '#3B6BF5' : 'transparent';
+    document.getElementById('register-tab').style.background = isLogin ? 'transparent' : '#3B6BF5';
     document.getElementById('login-tab').style.color    = isLogin ? '#fff' : 'rgba(255,255,255,0.5)';
     document.getElementById('register-tab').style.color = isLogin ? 'rgba(255,255,255,0.5)' : '#fff';
 }
@@ -80,7 +80,6 @@ async function handleLogout() {
     await apiFetch('/api/auth/logout', { method: 'POST' });
     currentUser = null;
     reportsLoaded = false;
-    chatHistory = [];
     showPage('auth');
 }
 
@@ -98,14 +97,6 @@ function showPage(name) {
     const appPages  = document.getElementById('app-pages');
     const isAppPage = !['auth', 'upload'].includes(name);
     appPages.style.display = isAppPage ? 'block' : 'none';
-
-    if (isAppPage) {
-        document.querySelector('nav').style.display  = 'flex';
-        document.querySelector('main').style.display = 'block';
-    } else {
-        document.querySelector('nav').style.display  = 'none';
-        document.querySelector('main').style.display = 'none';
-    }
 
     if (isAppPage) switchPage(name);
 }
@@ -170,11 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('click', e => {
     const el = e.target.closest('button, .nav-item, .suggestion-btn');
     if (!el) return;
-
     const ripple = document.createElement('span');
     const rect   = el.getBoundingClientRect();
     const size   = Math.max(rect.width, rect.height);
-
     ripple.className = 'ripple';
     ripple.style.cssText = `
         width: ${size}px;
@@ -182,26 +171,24 @@ document.addEventListener('click', e => {
         left: ${e.clientX - rect.left - size/2}px;
         top: ${e.clientY - rect.top - size/2}px;
     `;
-
     el.appendChild(ripple);
     ripple.addEventListener('animationend', () => ripple.remove());
 });
 
-// ── DRAG AND DROP HIGHLIGHT ───────────────────────────
+// ── DRAG AND DROP ─────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     const zone = document.getElementById('upload-zone');
     if (!zone) return;
-
     zone.addEventListener('dragenter', () => zone.classList.add('drag-active'));
     zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
     zone.addEventListener('drop',      () => zone.classList.remove('drag-active'));
 });
+
 // ── NUMBER ANIMATION ──────────────────────────────────
 function animateNumber(elementId, targetValue, prefix = '$', duration = 1000) {
     const el = document.getElementById(elementId);
     if (!el) return;
     const startTime = performance.now();
-
     function update(currentTime) {
         const elapsed  = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -212,19 +199,16 @@ function animateNumber(elementId, targetValue, prefix = '$', duration = 1000) {
     }
     requestAnimationFrame(update);
 }
+
 // ── SUMMARY ───────────────────────────────────────────
 async function loadSummary() {
     const data = await apiFetch('/api/summary').then(r => r.json());
-
     animateNumber('total-spent', data.total_spent, '$');
     animateNumber('monthly-avg', data.monthly_avg, '$');
-
     document.getElementById('top-category').textContent      = data.top_category;
     document.getElementById('top-category-amt').textContent  = fmt(data.top_category_amt) + ' annual spend';
     document.getElementById('transaction-count').textContent = data.transaction_count + ' transactions';
-
     animateNumber('anomaly-count', data.anomaly_count, '');
-
     document.getElementById('anomaly-badge').textContent = data.anomaly_count + ' flagged';
 }
 
@@ -235,46 +219,27 @@ async function loadTrendChart() {
     const values = data.map(d => d.Amount);
     const avg    = values.length > 0 ? values.reduce((a,b) => a+b, 0) / values.length : 0;
 
-    const crosshairPlugin = {
-        id: 'crosshair',
-        afterDraw(chart) {
-            if (chart._crosshairX === undefined) return;
-            const ctx  = chart.ctx;
-            const area = chart.chartArea;
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(chart._crosshairX, area.top);
-            ctx.lineTo(chart._crosshairX, area.bottom);
-            ctx.lineWidth   = 1;
-            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-            ctx.setLineDash([4, 4]);
-            ctx.stroke();
-            ctx.restore();
-        }
-    };
-
-    const chart = new Chart(document.getElementById('trendChart'), {
+    new Chart(document.getElementById('trendChart'), {
         type: 'line',
-        plugins: [crosshairPlugin],
         data: {
             labels,
             datasets: [
                 {
                     label: 'Monthly Spend',
                     data: values,
-                    borderColor: '#7c3aed',
+                    borderColor: '#3B6BF5',
                     borderWidth: 2.5,
-                    pointBackgroundColor: labels.map(m => ['May','June'].includes(m) ? '#ef4444' : '#7c3aed'),
+                    pointBackgroundColor: labels.map(m => ['May','June'].includes(m) ? '#ef4444' : '#3B6BF5'),
                     pointRadius: labels.map(m => ['May','June'].includes(m) ? 8 : 4),
                     pointHoverRadius: 10,
-                    pointHoverBackgroundColor: labels.map(m => ['May','June'].includes(m) ? '#ef4444' : '#a78bfa'),
+                    pointHoverBackgroundColor: labels.map(m => ['May','June'].includes(m) ? '#ef4444' : '#6B9BF5'),
                     pointHoverBorderColor: '#fff',
                     pointHoverBorderWidth: 2,
                     fill: true,
                     backgroundColor: ctx => {
                         const g = ctx.chart.ctx.createLinearGradient(0,0,0,280);
-                        g.addColorStop(0, 'rgba(124,58,237,0.25)');
-                        g.addColorStop(1, 'rgba(124,58,237,0)');
+                        g.addColorStop(0, 'rgba(59,107,245,0.25)');
+                        g.addColorStop(1, 'rgba(59,107,245,0)');
                         return g;
                     },
                     tension: 0.35
@@ -286,54 +251,25 @@ async function loadTrendChart() {
                     borderWidth: 1.5,
                     borderDash: [6,4],
                     pointRadius: 0,
-                    pointHoverRadius: 0,
-                    fill: false,
-                    tension: 0
+                    fill: false
                 }
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    ...tooltipStyle,
-                    callbacks: {
-                        label: ctx => ctx.datasetIndex === 0
-                            ? ` Spent: ${fmt(ctx.raw)}`
-                            : ` Avg: ${fmt(ctx.raw)}`
-                    }
-                }
+                tooltip: { ...tooltipStyle, callbacks: { label: ctx => ctx.datasetIndex === 0 ? ` Spent: ${fmt(ctx.raw)}` : ` Avg: ${fmt(ctx.raw)}` } }
             },
             scales: {
                 x: { grid: { color: gridColor } },
-                y: {
-                    grid: { color: gridColor },
-                    ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' }
-                }
-            },
-            onHover: (event, elements, chart) => {
-                if (event.native) {
-                    const rect = chart.canvas.getBoundingClientRect();
-                    chart._crosshairX = event.native.clientX - rect.left;
-                } else {
-                    chart._crosshairX = undefined;
-                }
-                chart.draw();
+                y: { grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
             }
         }
     });
-
-    document.getElementById('trendChart').addEventListener('mouseleave', () => {
-        chart._crosshairX = undefined;
-        chart.draw();
-    });
 }
+
 // ── CATEGORY CHART ────────────────────────────────────
 async function loadCategoryChart() {
     const data   = await apiFetch('/api/categories').then(r => r.json());
@@ -345,7 +281,7 @@ async function loadCategoryChart() {
             labels: sorted.map(d => d.Category),
             datasets: [{
                 data: sorted.map(d => d.Amount),
-                backgroundColor: sorted.map((_,i) => `rgba(124,58,237,${0.3 + (i/sorted.length)*0.7})`),
+                backgroundColor: sorted.map((_,i) => `rgba(59,107,245,${0.3 + (i/sorted.length)*0.7})`),
                 borderRadius: 4, borderSkipped: false
             }]
         },
@@ -370,7 +306,7 @@ async function loadBudgetChart() {
         data: {
             labels: data.map(d => d.Category),
             datasets: [
-                { label: 'Actual', data: data.map(d => d.Actual),        backgroundColor: 'rgba(124,58,237,0.8)', borderRadius: 4, borderSkipped: false },
+                { label: 'Actual', data: data.map(d => d.Actual),        backgroundColor: 'rgba(59,107,245,0.8)',  borderRadius: 4, borderSkipped: false },
                 { label: 'Budget', data: data.map(d => d.Annual_Budget), backgroundColor: 'rgba(249,115,22,0.7)', borderRadius: 4, borderSkipped: false }
             ]
         },
@@ -389,7 +325,6 @@ async function loadBudgetChart() {
 async function loadAnomalyChart() {
     const existing = Chart.getChart('anomalyChart');
     if (existing) existing.destroy();
-
     const data = await apiFetch('/api/anomalies').then(r => r.json());
     if (!data.length) return;
 
@@ -423,7 +358,7 @@ function renderRows(data) {
             <td>${t.date        || '—'}</td>
             <td>${t.description || '—'}</td>
             <td>${t.category    || '—'}</td>
-            <td>${t.account     || '—'}</td>
+            <td>${t.account     || t.account_name || '—'}</td>
             <td style="text-align:right;" class="amount-cell ${flagged ? 'flagged' : ''}">${fmt2(t.amount || 0)}</td>
             <td style="text-align:right;">
                 <span class="status-badge ${flagged ? 'status-flagged' : 'status-cleared'}">
@@ -445,10 +380,8 @@ async function loadAllTransactions() {
     const category = document.getElementById('filter-category')?.value || 'All';
     const account  = document.getElementById('filter-account')?.value  || 'All';
     const search   = document.getElementById('search-input')?.value    || '';
-
-    const params = new URLSearchParams({ month, category, account, search });
-    const data   = await apiFetch(`/api/transactions/all?${params}`).then(r => r.json());
-
+    const params   = new URLSearchParams({ month, category, account, search });
+    const data     = await apiFetch(`/api/transactions/all?${params}`).then(r => r.json());
     document.getElementById('filter-count').textContent        = data.length + ' results';
     document.getElementById('all-transactions-body').innerHTML = renderRows(data);
 }
@@ -472,7 +405,6 @@ async function loadFilters() {
 async function loadReports() {
     if (reportsLoaded) return;
     reportsLoaded = true;
-
     const data = await apiFetch('/api/reports').then(r => r.json());
 
     document.getElementById('monthly-report-body').innerHTML = data.monthly.map(m => `
@@ -490,7 +422,7 @@ async function loadReports() {
             labels: data.by_account.map(a => a.account),
             datasets: [{
                 data: data.by_account.map(a => a.total),
-                backgroundColor: ['rgba(124,58,237,0.8)','rgba(249,115,22,0.8)','rgba(34,197,94,0.8)'],
+                backgroundColor: ['rgba(59,107,245,0.8)', 'rgba(249,115,22,0.8)', 'rgba(34,197,94,0.8)'],
                 borderWidth: 0
             }]
         },
@@ -512,6 +444,8 @@ async function loadReports() {
 }
 
 // ── AI COACH ──────────────────────────────────────────
+let chatHistory = [];
+
 async function loadAIStats() {
     const data = await apiFetch('/api/summary').then(r => r.json());
     document.getElementById('ai-total').textContent     = fmt(data.total_spent);
@@ -532,18 +466,10 @@ async function sendMessage() {
     input.value = '';
 
     const messages = document.getElementById('chat-messages');
-
-    messages.innerHTML += `
-        <div class="user-message">
-            <div class="user-bubble">${message}</div>
-        </div>`;
+    messages.innerHTML += `<div class="user-message"><div class="user-bubble">${message}</div></div>`;
 
     const typingId = 'typing-' + Date.now();
-    messages.innerHTML += `
-        <div class="ai-message" id="${typingId}">
-            <div class="typing-bubble">FinanceIQ is thinking...</div>
-        </div>`;
-
+    messages.innerHTML += `<div class="ai-message" id="${typingId}"><div class="typing-bubble">Nomi is thinking...</div></div>`;
     messages.scrollTop = messages.scrollHeight;
 
     try {
@@ -553,7 +479,6 @@ async function sendMessage() {
             body:    JSON.stringify({ message, history: chatHistory })
         });
         const data = await res.json();
-
         document.getElementById(typingId)?.remove();
 
         if (data.response) {
@@ -561,28 +486,14 @@ async function sendMessage() {
                 { role: 'user',      content: message },
                 { role: 'assistant', content: data.response }
             );
-            messages.innerHTML += `
-                <div class="ai-message">
-                    <div class="ai-bubble">${data.response.replace(/\n/g, '<br>')}</div>
-                </div>`;
+            messages.innerHTML += `<div class="ai-message"><div class="ai-bubble">${data.response.replace(/\n/g, '<br>')}</div></div>`;
         } else {
-            messages.innerHTML += `
-                <div class="ai-message">
-                    <div class="ai-bubble" style="color:#f87171;">
-                        Error: ${data.error || 'Something went wrong'}
-                    </div>
-                </div>`;
+            messages.innerHTML += `<div class="ai-message"><div class="ai-bubble" style="color:#f87171;">Error: ${data.error || 'Something went wrong'}</div></div>`;
         }
     } catch(e) {
         document.getElementById(typingId)?.remove();
-        messages.innerHTML += `
-            <div class="ai-message">
-                <div class="ai-bubble" style="color:#f87171;">
-                    Connection error. Please try again.
-                </div>
-            </div>`;
+        messages.innerHTML += `<div class="ai-message"><div class="ai-bubble" style="color:#f87171;">Connection error. Please try again.</div></div>`;
     }
-
     messages.scrollTop = messages.scrollHeight;
 }
 
@@ -625,6 +536,62 @@ async function reloadSampleData() {
     }
 }
 
+// ── SQL INSIGHTS ──────────────────────────────────────
+async function loadSQLInsights() {
+    try {
+        const res = await apiFetch('/api/sql-insights');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const merchantsBody = document.getElementById('sql-merchants-body');
+        if (merchantsBody && data.top_merchants) {
+            merchantsBody.innerHTML = data.top_merchants.map(r => `
+                <tr>
+                    <td>${r.description}</td>
+                    <td style="text-align:right;">$${r.total_spent.toLocaleString()}</td>
+                    <td style="text-align:right;">${r.transaction_count}</td>
+                </tr>
+            `).join('');
+        }
+
+        const accountsBody = document.getElementById('sql-accounts-body');
+        if (accountsBody && data.by_account) {
+            accountsBody.innerHTML = data.by_account.map(r => `
+                <tr>
+                    <td>${r.account}</td>
+                    <td style="text-align:right;">$${r.total.toLocaleString()}</td>
+                    <td style="text-align:right;">$${r.avg_amount}</td>
+                </tr>
+            `).join('');
+        }
+
+        const biggestBody = document.getElementById('sql-biggest-body');
+        if (biggestBody && data.biggest) {
+            biggestBody.innerHTML = data.biggest.map(r => `
+                <tr>
+                    <td>${r.description}</td>
+                    <td>${r.category}</td>
+                    <td style="text-align:right; color:#f87171;">$${r.amount.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        const categoriesBody = document.getElementById('sql-categories-body');
+        if (categoriesBody && data.categories) {
+            categoriesBody.innerHTML = data.categories.map(r => `
+                <tr>
+                    <td>${r.category}</td>
+                    <td style="text-align:right;">$${r.total.toLocaleString()}</td>
+                    <td style="text-align:right;">${r.percentage}%</td>
+                </tr>
+            `).join('');
+        }
+
+    } catch(e) {
+        console.error('SQL insights error:', e);
+    }
+}
+
 // ── INIT ──────────────────────────────────────────────
 async function initDashboard() {
     await Promise.all([
@@ -634,7 +601,8 @@ async function initDashboard() {
         loadBudgetChart(),
         loadAnomalyChart(),
         loadTransactions(),
-        loadFilters()
+        loadFilters(),
+        loadSQLInsights()
     ]);
 }
 
@@ -646,6 +614,12 @@ async function startup() {
     } else {
         showPage('auth');
     }
+}
+function toggleSQL(btn) {
+    const pre = btn.nextElementSibling;
+    const visible = pre.style.display === 'block';
+    pre.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? 'Show SQL ▼' : 'Hide SQL ▲';
 }
 
 startup();

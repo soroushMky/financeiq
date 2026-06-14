@@ -42,7 +42,7 @@ nav {
 .nav-logo-icon {
   width: 32px;
   height: 32px;
-  background: #7c3aed;
+  background: #3B6BF5;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -103,7 +103,7 @@ nav {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c3aed, #4c1d95);
+  background: linear-gradient(135deg, #3B6BF5, #4c1d95);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -270,7 +270,7 @@ main {
 
 .kpi-bar-fill {
   height: 2px;
-  background: linear-gradient(90deg, #4c1d95, #7c3aed);
+  background: linear-gradient(90deg, #4c1d95, #3B6BF5);
   border-radius: 2px;
   transition: width 1s ease;
 }
@@ -733,7 +733,7 @@ footer {
   transform: translateX(-50%);
   width: 0;
   height: 2px;
-  background: #7c3aed;
+  background: #3B6BF5;
   border-radius: 2px;
   transition: width 0.2s ease;
 }
@@ -805,7 +805,7 @@ tbody tr {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #7c3aed;
+  background: #3B6BF5;
   transform: scaleY(0);
   transition: transform 0.2s ease;
   border-radius: 0 2px 2px 0;
@@ -1010,7 +1010,7 @@ button[onclick="handleLogout()"]:hover {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #7c3aed;
+  background: #3B6BF5;
   animation: navDot 0.3s ease forwards;
 }
 
@@ -1255,7 +1255,7 @@ button[onclick="sendMessage()"]:active {
 
 /* Upload zone drag active */
 #upload-zone.drag-active {
-  border-color: #7c3aed;
+  border-color: #3B6BF5;
   background: rgba(124, 58, 237, 0.08);
   transform: scale(1.02);
   box-shadow: 0 0 30px rgba(124, 58, 237, 0.2);
@@ -1322,4 +1322,48 @@ button[onclick="sendMessage()"]:active {
     opacity: 1;
     transform: translateY(0);
   }
+}
+/* ── Animated Particles Background ── */
+#particles-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(59, 107, 245, 0.15);
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-100px) scale(1);
+    opacity: 0;
+  }
+}
+
+#app-pages main,
+#page-dashboard {
+  position: relative;
+  z-index: 1;
 }
