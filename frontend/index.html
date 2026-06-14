@@ -7,7 +7,7 @@
   <title>Nomi — Personal Finance Analyzer</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=2" defer></script>
   <style>
     .nomi-logo-img {
       width: 80px;
@@ -178,9 +178,11 @@
       <div class="nav-items">
         <div class="nav-item active" data-page="dashboard">Dashboard</div>
         <div class="nav-item" data-page="transactions">Transactions</div>
+        <div class="nav-item" data-page="compare">Year Compare</div>
         <div class="nav-item" data-page="reports">Reports</div>
         <div class="nav-item" data-page="settings">Settings</div>
         <div class="nav-item" data-page="ai">AI Coach</div>
+        
       </div>
       <div class="nav-right">
         <div class="nav-bell">🔔</div>
@@ -742,6 +744,139 @@ GROUP BY category ORDER BY total DESC</pre>
             </div>
           </div>
         </div>
+      </div>
+      <!-- ── YEAR COMPARISON ── -->
+      <div id="page-compare" class="page">
+        <div class="page-header">
+          <h1>📅 Year-over-Year Comparison</h1>
+          <p>Compare spending patterns across different years</p>
+        </div>
+      
+        <!-- Year Selectors -->
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:rgba(255,255,255,0.5);">Compare</span>
+            <select id="year1-select" onchange="loadComparison()"
+              style="background:#1C1C1E; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 12px; color:#fff; font-size:13px; font-family:Inter,sans-serif; cursor:pointer;">
+              <option value="2018">2018</option>
+              <option value="2019">2019</option>
+            </select>
+          </div>
+          <span style="font-size:13px; color:rgba(255,255,255,0.3);">vs</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <select id="year2-select" onchange="loadComparison()"
+              style="background:#1C1C1E; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 12px; color:#fff; font-size:13px; font-family:Inter,sans-serif; cursor:pointer;">
+              <option value="2018">2018</option>
+              <option value="2019" selected>2019</option>
+            </select>
+          </div>
+          <button onclick="loadComparison()"
+            style="background:#3B6BF5; border:none; border-radius:8px; padding:8px 16px; color:#fff; font-size:13px; font-weight:500; cursor:pointer; font-family:Inter,sans-serif;">
+            Compare →
+          </button>
+        </div>
+      
+        <!-- KPI Cards -->
+        <div class="kpi-grid" style="margin-bottom:24px;">
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Total Spending</span></div>
+            <div style="display:flex; gap:16px; margin-top:8px;">
+              <div>
+                <div style="font-size:11px; color:#3B6BF5; margin-bottom:4px;" id="compare-year1-label">2018</div>
+                <div class="kpi-value" id="compare-total-1" style="font-size:22px;">—</div>
+              </div>
+              <div style="width:1px; background:rgba(255,255,255,0.08);"></div>
+              <div>
+                <div style="font-size:11px; color:#f97316; margin-bottom:4px;" id="compare-year2-label">2019</div>
+                <div class="kpi-value" id="compare-total-2" style="font-size:22px;">—</div>
+              </div>
+            </div>
+            <div id="compare-total-diff" class="kpi-sub" style="margin-top:8px;">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Monthly Average</span></div>
+            <div style="display:flex; gap:16px; margin-top:8px;">
+              <div>
+                <div style="font-size:11px; color:#3B6BF5; margin-bottom:4px;">Year 1</div>
+                <div class="kpi-value" id="compare-avg-1" style="font-size:22px;">—</div>
+              </div>
+              <div style="width:1px; background:rgba(255,255,255,0.08);"></div>
+              <div>
+                <div style="font-size:11px; color:#f97316; margin-bottom:4px;">Year 2</div>
+                <div class="kpi-value" id="compare-avg-2" style="font-size:22px;">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Anomalies Detected</span></div>
+            <div style="display:flex; gap:16px; margin-top:8px;">
+              <div>
+                <div style="font-size:11px; color:#3B6BF5; margin-bottom:4px;">Year 1</div>
+                <div class="kpi-value" id="compare-anomalies-1" style="font-size:22px;">—</div>
+              </div>
+              <div style="width:1px; background:rgba(255,255,255,0.08);"></div>
+              <div>
+                <div style="font-size:11px; color:#f97316; margin-bottom:4px;">Year 2</div>
+                <div class="kpi-value" id="compare-anomalies-2" style="font-size:22px;">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-header"><span class="kpi-label">Difference</span></div>
+            <div class="kpi-value" id="compare-diff-pct" style="font-size:28px; margin-top:8px;">—</div>
+            <div class="kpi-sub" id="compare-diff-label">vs previous year</div>
+          </div>
+        </div>
+      
+        <!-- Monthly Trend Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📈 Monthly Spending Trend</div>
+              <div class="card-sub">Side by side monthly comparison</div>
+            </div>
+            <div style="display:flex; gap:16px; align-items:center;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:12px; height:3px; background:#3B6BF5; border-radius:2px;"></div>
+                <span style="font-size:12px; color:rgba(255,255,255,0.5);" id="legend-year1">2018</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:12px; height:3px; background:#f97316; border-radius:2px;"></div>
+                <span style="font-size:12px; color:rgba(255,255,255,0.5);" id="legend-year2">2019</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container" style="height:300px;">
+            <canvas id="compareMonthlyChart"></canvas>
+          </div>
+        </div>
+      
+        <!-- Category Comparison -->
+        <div class="two-col" style="margin-top:16px;">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title" id="compare-cat-title-1">2018 — Top Categories</div>
+            <div class="card-sub">Spending breakdown</div>
+            <div class="chart-container" style="height:280px;">
+              <canvas id="compareCat1Chart"></canvas>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title" id="compare-cat-title-2">2019 — Top Categories</div>
+            <div class="card-sub">Spending breakdown</div>
+            <div class="chart-container" style="height:280px;">
+              <canvas id="compareCat2Chart"></canvas>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Insights Card -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">💡 Key Insights</div>
+          <div id="compare-insights" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+            <div style="color:rgba(255,255,255,0.4); font-size:13px;">Select years and click Compare to see insights.</div>
+          </div>
+        </div>
+      
       </div>
 
     </main>

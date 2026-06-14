@@ -48,6 +48,7 @@ async function handleLogin() {
         const data = await res.json();
         if (!res.ok) { errorEl.textContent = data.error; errorEl.style.display = 'block'; return; }
         currentUser = data.user;
+        updateUserUI();
         checkAndShowDashboard();
     } catch(e) {
         errorEl.textContent = 'Connection error. Is the server running?';
@@ -69,6 +70,7 @@ async function handleRegister() {
         const data = await res.json();
         if (!res.ok) { errorEl.textContent = data.error; errorEl.style.display = 'block'; return; }
         currentUser = data.user;
+        updateUserUI();
         checkAndShowDashboard();
     } catch(e) {
         errorEl.textContent = 'Connection error.';
@@ -86,18 +88,33 @@ async function handleLogout() {
 async function checkAndShowDashboard() {
     const res = await apiFetch('/api/summary');
     if (res.status === 404) { showPage('upload'); return; }
-    if (res.ok)             { showPage('dashboard'); initDashboard(); return; }
+    if (res.ok) {
+        showPage('dashboard');
+        initDashboard();
+        return;
+    }
     showPage('auth');
+}
+
+function updateUserUI() {
+    if (!currentUser) return;
+    const name = currentUser.username;
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+    const nameEl   = document.getElementById('nav-username');
+    const greetEl  = document.querySelector('#page-dashboard .page-header h1');
+    const avatarEl = document.querySelector('.nav-avatar');
+    if (nameEl)   nameEl.textContent  = name;
+    if (greetEl)  greetEl.textContent = greeting + ', ' + name + ' 👋';
+    if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
 }
 
 function showPage(name) {
     document.getElementById('auth-page').style.display   = name === 'auth'   ? 'block' : 'none';
     document.getElementById('upload-page').style.display = name === 'upload' ? 'block' : 'none';
-
     const appPages  = document.getElementById('app-pages');
     const isAppPage = !['auth', 'upload'].includes(name);
     appPages.style.display = isAppPage ? 'block' : 'none';
-
     if (isAppPage) switchPage(name);
 }
 
@@ -149,6 +166,7 @@ function switchPage(name) {
     if (name === 'transactions') loadAllTransactions();
     if (name === 'reports')      loadReports();
     if (name === 'ai')           loadAIStats();
+    if (name === 'compare')      loadComparison();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -591,6 +609,158 @@ async function loadSQLInsights() {
         console.error('SQL insights error:', e);
     }
 }
+// ── YEAR COMPARISON ──────────────────────────────────
+let compareChart1 = null;
+let compareChart2 = null;
+let compareMonthlyChart = null;
+
+async function loadComparison() {
+    const year1 = document.getElementById('year1-select').value;
+    const year2 = document.getElementById('year2-select').value;
+
+    const res  = await apiFetch(`/api/yearly-comparison?year1=${year1}&year2=${year2}`);
+    const json = await res.json();
+
+    const d1 = json.data[year1];
+    const d2 = json.data[year2];
+
+    // Update labels
+    document.getElementById('compare-year1-label').textContent = year1;
+    document.getElementById('compare-year2-label').textContent = year2;
+    document.getElementById('legend-year1').textContent = year1;
+    document.getElementById('legend-year2').textContent = year2;
+    document.getElementById('compare-cat-title-1').textContent = year1 + ' — Top Categories';
+    document.getElementById('compare-cat-title-2').textContent = year2 + ' — Top Categories';
+
+    // KPI cards
+    document.getElementById('compare-total-1').textContent = fmt(d1.total);
+    document.getElementById('compare-total-2').textContent = fmt(d2.total);
+    document.getElementById('compare-avg-1').textContent   = fmt(d1.avg);
+    document.getElementById('compare-avg-2').textContent   = fmt(d2.avg);
+    document.getElementById('compare-anomalies-1').textContent = d1.anomalies;
+    document.getElementById('compare-anomalies-2').textContent = d2.anomalies;
+
+    // Difference
+    const diff    = d2.total - d1.total;
+    const diffPct = d1.total > 0 ? ((diff / d1.total) * 100).toFixed(1) : 0;
+    const diffEl  = document.getElementById('compare-diff-pct');
+    const diffLbl = document.getElementById('compare-diff-label');
+    const totalDiffEl = document.getElementById('compare-total-diff');
+    diffEl.textContent  = (diff > 0 ? '+' : '') + diffPct + '%';
+    diffEl.style.color  = diff > 0 ? '#FF3B30' : '#34C759';
+    diffLbl.textContent = diff > 0 ? year2 + ' spent more' : year2 + ' spent less';
+    totalDiffEl.textContent = (diff > 0 ? '▲ ' : '▼ ') + fmt(Math.abs(diff)) + ' difference';
+    totalDiffEl.style.color = diff > 0 ? '#FF3B30' : '#34C759';
+
+    // Monthly trend chart
+    const allMonths = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const getMonthly = (d) => allMonths.map(m => {
+        const found = d.monthly.find(x => x.month === m);
+        return found ? found.total : null;
+    });
+
+    if (compareMonthlyChart) compareMonthlyChart.destroy();
+    compareMonthlyChart = new Chart(document.getElementById('compareMonthlyChart'), {
+        type: 'line',
+        data: {
+            labels: allMonths.map(m => m.slice(0,3)),
+            datasets: [
+                {
+                    label: year1,
+                    data: getMonthly(d1),
+                    borderColor: '#3B6BF5',
+                    backgroundColor: 'rgba(59,107,245,0.1)',
+                    borderWidth: 2.5,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.35,
+                    spanGaps: true
+                },
+                {
+                    label: year2,
+                    data: getMonthly(d2),
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249,115,22,0.1)',
+                    borderWidth: 2.5,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.35,
+                    spanGaps: true
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: { ...tooltipStyle, callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}` } }
+            },
+            scales: {
+                x: { grid: { color: gridColor } },
+                y: { grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+            }
+        }
+    });
+
+    // Category charts
+    if (compareChart1) compareChart1.destroy();
+    compareChart1 = new Chart(document.getElementById('compareCat1Chart'), {
+        type: 'bar',
+        data: {
+            labels: d1.categories.map(c => c.name.split(' ')[0]),
+            datasets: [{ data: d1.categories.map(c => c.total), backgroundColor: 'rgba(59,107,245,0.7)', borderRadius: 4, borderSkipped: false }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
+            scales: { x: { grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }, y: { grid: { display: false } } }
+        }
+    });
+
+    if (compareChart2) compareChart2.destroy();
+    compareChart2 = new Chart(document.getElementById('compareCat2Chart'), {
+        type: 'bar',
+        data: {
+            labels: d2.categories.map(c => c.name.split(' ')[0]),
+            datasets: [{ data: d2.categories.map(c => c.total), backgroundColor: 'rgba(249,115,22,0.7)', borderRadius: 4, borderSkipped: false }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
+            scales: { x: { grid: { color: gridColor }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }, y: { grid: { display: false } } }
+        }
+    });
+
+    // Insights
+    const insights = [];
+    if (diff < 0) insights.push(`✅ Spent ${fmt(Math.abs(diff))} less in ${year2} than ${year1} — a ${Math.abs(diffPct)}% improvement`);
+    else insights.push(`⚠️ Spent ${fmt(diff)} more in ${year2} than ${year1} — a ${diffPct}% increase`);
+
+    const top1 = d1.categories[0];
+    const top2 = d2.categories[0];
+    if (top1) insights.push(`📌 ${year1} biggest category: ${top1.name} at ${fmt(top1.total)}`);
+    if (top2) insights.push(`📌 ${year2} biggest category: ${top2.name} at ${fmt(top2.total)}`);
+
+    if (d1.anomalies !== d2.anomalies) {
+        const anomDiff = d2.anomalies - d1.anomalies;
+        insights.push(`${anomDiff > 0 ? '⚠️' : '✅'} Anomalies ${anomDiff > 0 ? 'increased' : 'decreased'} from ${d1.anomalies} to ${d2.anomalies}`);
+    }
+
+    document.getElementById('compare-insights').innerHTML = insights.map(i =>
+        `<div style="padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:8px; font-size:13px; color:rgba(255,255,255,0.8); border-left:3px solid #3B6BF5;">${i}</div>`
+    ).join('');
+}
+
+// ── SQL TOGGLE ────────────────────────────────────────
+function toggleSQL(btn) {
+    const pre = btn.nextElementSibling;
+    const visible = pre.style.display === 'block';
+    pre.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? 'Show SQL ▼' : 'Hide SQL ▲';
+}
 
 // ── INIT ──────────────────────────────────────────────
 async function initDashboard() {
@@ -604,22 +774,18 @@ async function initDashboard() {
         loadFilters(),
         loadSQLInsights()
     ]);
+    updateUserUI();
 }
 
 async function startup() {
     const res = await apiFetch('/api/auth/me');
     if (res.ok) {
         currentUser = await res.json();
+        updateUserUI();
         checkAndShowDashboard();
     } else {
         showPage('auth');
     }
-}
-function toggleSQL(btn) {
-    const pre = btn.nextElementSibling;
-    const visible = pre.style.display === 'block';
-    pre.style.display = visible ? 'none' : 'block';
-    btn.textContent = visible ? 'Show SQL ▼' : 'Hide SQL ▲';
 }
 
 startup();

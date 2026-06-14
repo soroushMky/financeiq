@@ -718,6 +718,61 @@ def sql_insights():
     results['by_account'] = [dict(r._mapping) for r in q5]
 
     return jsonify(results)
+@app.route('/api/yearly-comparison')
+@login_required
+def yearly_comparison():
+    year1 = request.args.get('year1', '2018')
+    year2 = request.args.get('year2', '2019')
+
+    transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+    if not transactions:
+        return jsonify({'error': 'No data'}), 404
+
+    df = pd.DataFrame([{
+        'date':     t.date,
+        'amount':   t.amount,
+        'category': t.category,
+        'is_anomaly': t.is_anomaly
+    } for t in transactions])
+
+    df['year']       = df['date'].dt.year.astype(str)
+    df['month']      = df['date'].dt.month
+    df['month_name'] = df['date'].dt.strftime('%B')
+
+    results = {}
+
+    for year in [year1, year2]:
+        ydf = df[df['year'] == year]
+        if ydf.empty:
+            results[year] = {
+                'total': 0, 'avg': 0, 'anomalies': 0,
+                'monthly': [], 'categories': []
+            }
+            continue
+
+        monthly = ydf.groupby(['month', 'month_name'])['amount'].sum().reset_index()
+        monthly = monthly.sort_values('month')
+
+        categories = ydf.groupby('category')['amount'].sum().reset_index()
+        categories = categories.sort_values('amount', ascending=False).head(8)
+
+        results[year] = {
+            'total':      round(float(ydf['amount'].sum()), 2),
+            'avg':        round(float(ydf['amount'].sum() / 12), 2),
+            'anomalies':  int(ydf['is_anomaly'].sum()),
+            'monthly':    monthly[['month_name', 'amount']].rename(
+                columns={'month_name': 'month', 'amount': 'total'}
+            ).to_dict(orient='records'),
+            'categories': categories.rename(
+                columns={'category': 'name', 'amount': 'total'}
+            ).to_dict(orient='records')
+        }
+
+    return jsonify({
+        'year1': year1,
+        'year2': year2,
+        'data':  results
+    })
 
 
 if __name__ == '__main__':
