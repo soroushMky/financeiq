@@ -773,6 +773,91 @@ def yearly_comparison():
         'year2': year2,
         'data':  results
     })
+@app.route('/api/generate-report', methods=['POST'])
+@login_required
+def generate_report():
+    try:
+        import anthropic as ant
+
+        transactions = Transaction.query.filter_by(user_id=current_user.id).all()
+        if not transactions:
+            return jsonify({'error': 'No data'}), 404
+
+        df = pd.DataFrame([{
+            'date':      t.date,
+            'amount':    t.amount,
+            'category':  t.category,
+            'is_anomaly': t.is_anomaly,
+            'description': t.description
+        } for t in transactions])
+
+        df['year']       = df['date'].dt.year
+        df['month']      = df['date'].dt.strftime('%B')
+        df['month_num']  = df['date'].dt.month
+
+        total_spent      = round(df['amount'].sum(), 2)
+        monthly_avg      = round(total_spent / 12, 2)
+        top_category     = df.groupby('category')['amount'].sum().idxmax()
+        top_cat_amt      = round(df.groupby('category')['amount'].sum().max(), 2)
+        anomaly_count    = int(df['is_anomaly'].sum())
+        monthly_totals   = df.groupby(['month_num', 'month'])['amount'].sum().reset_index()
+        monthly_totals   = monthly_totals.sort_values('month_num')
+        cat_breakdown    = df.groupby('category')['amount'].sum().round(2).sort_values(ascending=False).to_dict()
+        health           = calculate_health_score(current_user.id)
+
+        prompt = f"""
+You are a professional financial analyst. Write a comprehensive but concise financial report 
+for {current_user.username} based on their 2018-2019 spending data.
+
+KEY DATA:
+- Total Spent: ${total_spent:,.2f}
+- Monthly Average: ${monthly_avg:,.2f}
+- Top Category: {top_category} (${top_cat_amt:,.2f})
+- Anomalies Detected: {anomaly_count}
+- Financial Health Score: {health['score']}/100
+
+MONTHLY BREAKDOWN:
+{monthly_totals[['month', 'amount']].to_string(index=False)}
+
+CATEGORY BREAKDOWN:
+{pd.Series(cat_breakdown).to_string()}
+
+Write the report in this exact structure using markdown:
+
+## Executive Summary
+2-3 sentences summarizing the overall financial picture.
+
+## Monthly Analysis
+Highlight the most notable months, especially May/June spikes. 
+Identify patterns and trends.
+
+## Top Spending Categories
+Analyze the top 5 categories and what they reveal about spending behavior.
+
+## Anomalies & Red Flags
+Explain the {anomaly_count} detected anomalies and their impact.
+
+## Financial Health Score: {health['score']}/100
+Break down what the score means and which components need improvement.
+
+## Recommendations
+Give 5 specific, actionable recommendations based on the actual data.
+
+Keep the tone professional but friendly. Be specific with numbers.
+Total length: 400-500 words.
+"""
+
+        client   = ant.Anthropic(api_key=os.getenv('CLAUDE_API_KEY'))
+        response = client.messages.create(
+            model      = 'claude-sonnet-4-6',
+            max_tokens = 1000,
+            messages   = [{'role': 'user', 'content': prompt}]
+        )
+
+        return jsonify({'report': response.content[0].text})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

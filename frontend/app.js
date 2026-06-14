@@ -787,5 +787,45 @@ async function startup() {
         showPage('auth');
     }
 }
+// ── AI REPORT ─────────────────────────────────────────
+async function generateReport() {
+    const modal = document.getElementById('report-modal');
+    if (!modal) { console.error('Modal not found'); return; }
+    modal.style.display = 'flex';
+    document.getElementById('report-content').innerHTML = `
+        <div style="text-align:center; padding:40px; color:rgba(255,255,255,0.3);">
+            <div style="font-size:32px; margin-bottom:12px;">🤖</div>
+            <div>Generating your personalized report...</div>
+            <div style="font-size:11px; margin-top:8px; color:rgba(255,255,255,0.2);">This takes about 10 seconds</div>
+        </div>`;
+
+    try {
+        const res  = await apiFetch('/api/generate-report', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.report) {
+            document.getElementById('report-content').innerHTML = markdownToHTML(data.report);
+        } else {
+            document.getElementById('report-content').innerHTML = `<p style="color:#f87171;">Error: ${data.error}</p>`;
+        }
+    } catch(e) {
+        document.getElementById('report-content').innerHTML = `<p style="color:#f87171;">Connection error. Please try again.</p>`;
+    }
+}
+
+function closeReport() {
+    const modal = document.getElementById('report-modal');
+    if (modal) modal.style.display = 'none';
+}
+function markdownToHTML(md) {
+    return md
+        .replace(/## (.*)/g, '<h3 style="font-size:15px; font-weight:600; color:#fff; margin:20px 0 8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.08);">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#fff;">$1</strong>')
+        .replace(/^- (.*)/gm, '<li style="margin:4px 0; padding-left:4px;">$1</li>')
+        .replace(/(<li.*<\/li>\n?)+/g, '<ul style="padding-left:20px; margin:8px 0;">$&</ul>')
+        .replace(/\n\n/g, '</p><p style="margin:8px 0;">')
+        .replace(/^(?!<[hul])/gm, '')
+        .replace(/\n/g, '<br>');
+}
 
 startup();
